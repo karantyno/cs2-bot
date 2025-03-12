@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-TOKEN = "ТВОЙ_ТОКЕН_БОТА"
+TOKEN = "7250987821:AAH6K0nJr5IT0aRNUMdwvvPjqTcDn5vrhk4"
 ADMIN_ID = 326929052  # Твой Telegram ID
 
 bot = Bot(token=TOKEN)
