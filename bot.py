@@ -79,7 +79,7 @@ async def reset_players(message: types.Message):
 # Таймер на напоминание о начале игры
 async def countdown_timer():
     while True:
-        now = datetime.datetime.now()
+        now = datetime.now()
         game_time = datetime.datetime(now.year, now.month, now.day, 21, 0)  # 21:00 МСК
         time_left = (game_time - now).total_seconds()
         
