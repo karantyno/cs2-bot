@@ -14,13 +14,17 @@ dp = Dispatcher()
 players = []
 
 # Клавиатура с кнопками
-keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="🔥 Вступить и не ссать"), KeyboardButton(text="🎮 Записаться на игру")],
-        [KeyboardButton(text="📋 Список участников"), KeyboardButton(text="⚔ Разделение команд")],
-        [KeyboardButton(text="🚪 Выйти из списка")]
-    ],
-    resize_keyboard=True
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+inline_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="🔥 Вступить и не ссать", callback_data="join")],
+        [InlineKeyboardButton(text="🎮 Записаться на игру", callback_data="register")],
+        [InlineKeyboardButton(text="📋 Список участников", callback_data="players")],
+        [InlineKeyboardButton(text="⚔ Разделение команд", callback_data="teams")],
+        [InlineKeyboardButton(text="🚪 Выйти из списка", callback_data="leave")]
+    ]
+)
 )
 
 # Команда /start
