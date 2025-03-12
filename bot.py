@@ -25,6 +25,11 @@ keyboard = ReplyKeyboardMarkup(
 async def start_cmd(message: types.Message):
     await message.answer("Добро пожаловать! Выбери действие:", reply_markup=keyboard)
 
+# Кнопка "Вступить и не ссать"
+@dp.message(lambda message: message.text == "🔥 Вступить и не ссать")
+async def join_and_not_fear(message: types.Message):
+    await message.answer("Красавчик! Теперь нажми - записаться на игру")
+
 # Кнопка "Записаться на игру" и команда /join
 @dp.message(lambda message: message.text == "🎮 Записаться на игру" or message.text == "/join")
 async def join_tournament(message: types.Message):
