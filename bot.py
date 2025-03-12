@@ -3,7 +3,8 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-TOKEN = "ТВОЙ_ТОКЕН"  # Вставь свой токен
+TOKEN = "ТВОЙ_ТОКЕН_БОТА"
+ADMIN_ID = 326929052  # Твой Telegram ID
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -15,7 +16,8 @@ players = []
 keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🔥 Вступить и не ссать"), KeyboardButton(text="🎮 Записаться на игру")],
-        [KeyboardButton(text="📋 Список участников"), KeyboardButton(text="⚔ Разделение команд")]
+        [KeyboardButton(text="📋 Список участников"), KeyboardButton(text="⚔ Разделение команд")],
+        [KeyboardButton(text="🚪 Выйти из списка")]
     ],
     resize_keyboard=True
 )
@@ -27,8 +29,8 @@ async def start_cmd(message: types.Message):
 
 # Кнопка "Вступить и не ссать"
 @dp.message(lambda message: message.text == "🔥 Вступить и не ссать")
-async def join_game(message: types.Message):
-    await message.answer("Красавчик! Теперь нажми - 'Записаться на игру'")
+async def join_welcome(message: types.Message):
+    await message.answer("Красавчик! Теперь нажми - записаться на игру")
 
 # Кнопка "Записаться на игру" и команда /join
 @dp.message(lambda message: message.text == "🎮 Записаться на игру" or message.text == "/join")
@@ -38,10 +40,8 @@ async def join_tournament(message: types.Message):
             players.append(message.from_user.full_name)
             await message.answer(f"✅ {message.from_user.full_name} записан! ({len(players)}/12)")
             
-            # Автоуведомление, если лобби заполнено
             if len(players) == 12:
-                for player in players:  # Отправляем сообщение каждому участнику
-                    await bot.send_message(message.chat.id, "🔥 Лобби заполнено! Запись закрыта, готовьтесь к бою!")
+                await bot.send_message(chat_id=message.chat.id, text="🔥 Лобби заполнено! Запись закрыта!")
         else:
             await message.answer("⚠️ Вы уже записаны!")
     else:
@@ -55,12 +55,41 @@ async def list_players(message: types.Message):
     else:
         await message.answer("❌ Пока никто не записался.")
 
-# Кнопка "Разделение команд" (заглушка, пока без логики)
-@dp.message(lambda message: message.text == "⚔ Разделение команд")
-async def teams_division(message: types.Message):
-    await message.answer("⚔ Функция разделения команд в разработке!")
+# Кнопка "Выйти из списка"
+@dp.message(lambda message: message.text == "🚪 Выйти из списка")
+async def leave_tournament(message: types.Message):
+    if message.from_user.full_name in players:
+        players.remove(message.from_user.full_name)
+        await message.answer("😢 Зассал? Ждем тебя в другой раз!")
+    else:
+        await message.answer("❌ Ты не был в списке!")
+
+# Админ-команда /reset (сброс списка)
+@dp.message(Command("reset"))
+async def reset_players(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        global players
+        players = []
+        await message.answer("🔄 Список игроков сброшен!")
+    else:
+        await message.answer("🚫 У тебя нет прав на эту команду!")
+
+# Таймер на напоминание о начале игры
+async def countdown_timer():
+    while True:
+        now = datetime.datetime.now()
+        game_time = datetime.datetime(now.year, now.month, now.day, 21, 0)  # 21:00 МСК
+        time_left = (game_time - now).total_seconds()
+        
+        if 0 < time_left <= 1800:  # Если до игры меньше 30 минут
+            for player in players:
+                await bot.send_message(player, "⏳ До начала игры осталось 30 минут! Готовьтесь!")
+                await asyncio.sleep(600)  # Повторять каждые 10 минут
+        
+        await asyncio.sleep(60)  # Проверять каждую минуту
 
 async def main():
+    asyncio.create_task(countdown_timer())
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
