@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-TOKEN = "7250987821:AAH6K0nJr5IT0aRNUMdwvvPjqTcDn5vrhk4"  # Вставь свой токен
+TOKEN = "ТВОЙ_ТОКЕН"  # Вставь свой токен
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -27,8 +27,8 @@ async def start_cmd(message: types.Message):
 
 # Кнопка "Вступить и не ссать"
 @dp.message(lambda message: message.text == "🔥 Вступить и не ссать")
-async def join_and_not_fear(message: types.Message):
-    await message.answer("Красавчик! Теперь нажми - записаться на игру")
+async def join_game(message: types.Message):
+    await message.answer("Красавчик! Теперь нажми - 'Записаться на игру'")
 
 # Кнопка "Записаться на игру" и команда /join
 @dp.message(lambda message: message.text == "🎮 Записаться на игру" or message.text == "/join")
@@ -40,7 +40,8 @@ async def join_tournament(message: types.Message):
             
             # Автоуведомление, если лобби заполнено
             if len(players) == 12:
-                await message.answer("🔥 Лобби заполнено! Готовьтесь к бою!")
+                for player in players:  # Отправляем сообщение каждому участнику
+                    await bot.send_message(message.chat.id, "🔥 Лобби заполнено! Запись закрыта, готовьтесь к бою!")
         else:
             await message.answer("⚠️ Вы уже записаны!")
     else:
