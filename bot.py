@@ -1,9 +1,10 @@
 import asyncio
+from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-TOKEN = "7250987821:AAH6K0nJr5IT0aRNUMdwvvPjqTcDn5vrhk4"  # Замени на свой токен
+TOKEN = "7250987821:AAH6K0nJr5IT0aRNUMdwvvPjqTcDn5vrhk4"  # Вставь свой токен
 ADMIN_ID = 326929052  # Твой Telegram ID
 
 bot = Bot(token=TOKEN)
@@ -12,8 +13,6 @@ dp = Dispatcher()
 # Список игроков
 players = []
 
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
 # Клавиатура с кнопками
 keyboard = ReplyKeyboardMarkup(
     keyboard=[
@@ -21,15 +20,26 @@ keyboard = ReplyKeyboardMarkup(
         [KeyboardButton(text="🎮 Записаться на игру")],
         [KeyboardButton(text="📋 Список участников")],
         [KeyboardButton(text="⚔ Разделение команд")],
-        [KeyboardButton(text="🚪 Выйти из списка")]
+        [KeyboardButton(text="🚪 Выйти из списка")],
+        [KeyboardButton(text="🗑 Очистить список")]  # Кнопка для администратора
     ],
-    resize_keyboard=True  # Компактные кнопки
+    resize_keyboard=True
 )
 
 # Команда /start
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     await message.answer("Добро пожаловать! Выбери действие:", reply_markup=keyboard)
+
+# Кнопка "Очистить список" (только для админа)
+@dp.message(lambda message: message.text == "🗑 Очистить список")
+async def clear_players(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        global players
+        players = []
+        await message.answer("🔄 Список участников очищен!")
+    else:
+        await message.answer("⛔ У вас нет прав использовать эту команду.")
 
 # Кнопка "Вступить и не ссать"
 @dp.message(lambda message: message.text == "🔥 Вступить и не ссать")
