@@ -12,6 +12,8 @@ dp = Dispatcher()
 # Список игроков
 players = []
 
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
 # Клавиатура с кнопками
 keyboard = ReplyKeyboardMarkup(
     keyboard=[
