@@ -19,10 +19,12 @@ keyboard = ReplyKeyboardMarkup(
         [KeyboardButton(text="📋 Список участников")],
         [KeyboardButton(text="🚪 Выйти из списка")],
         [KeyboardButton(text="⚔ Разделение команд")],
-        [KeyboardButton(text="🗑 Очистить список (только для админа)")]
+        [KeyboardButton(text="🗑 Очистить список (только для админа)")],
+        [KeyboardButton(text="🚀 Открыть мини-аппу", web_app=types.WebAppInfo(url="https://cs2-mini-app-production.up.railway.app/"))]
     ],
     resize_keyboard=True
 )
+
 
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
