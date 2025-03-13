@@ -1,100 +1,86 @@
 import asyncio
-from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-TOKEN = "7250987821:AAH6K0nJr5IT0aRNUMdwvvPjqTcDn5vrhk4"  # Вставь свой токен
+TOKEN = "7250987821:AAH6K0nJr5IT0aRNUMdwvvPjqTcDn5vrhk4"  # Замени на свой токен
 ADMIN_ID = 326929052  # Твой Telegram ID
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Список игроков (ID и имя)
-players = {}
+# Список игроков
+players = []
 
-# Инлайн-клавиатура с кнопками
-inline_keyboard = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [InlineKeyboardButton(text="🔥 Вступить и не ссать", callback_data="join")],
-        [InlineKeyboardButton(text="🎮 Записаться на игру", callback_data="register")],
-        [InlineKeyboardButton(text="📋 Список участников", callback_data="players")],
-        [InlineKeyboardButton(text="⚔ Разделение команд", callback_data="teams")],
-        [InlineKeyboardButton(text="🚪 Выйти из списка", callback_data="leave")]
-    ]
+# Клавиатура с кнопками
+keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="🔥 Вступить и не ссать")],
+        [KeyboardButton(text="🎮 Записаться на игру")],
+        [KeyboardButton(text="📋 Список участников")],
+        [KeyboardButton(text="⚔ Разделение команд")],
+        [KeyboardButton(text="🚪 Выйти из списка")]
+    ],
+    resize_keyboard=True  # Компактные кнопки
 )
 
 # Команда /start
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
-    await message.answer("Добро пожаловать! Выбери действие:", reply_markup=inline_keyboard)
+    await message.answer("Добро пожаловать! Выбери действие:", reply_markup=keyboard)
 
-# Нажатие на инлайн-кнопку "Записаться на игру"
-@dp.callback_query(lambda c: c.data == "register")
-async def register_player(callback_query: types.CallbackQuery):
-    user_id = callback_query.from_user.id
-    user_name = callback_query.from_user.full_name
+# Кнопка "Вступить и не ссать"
+@dp.message(lambda message: message.text == "🔥 Вступить и не ссать")
+async def join_ready(message: types.Message):
+    await message.answer("Красавчик! Теперь нажми - 'Записаться на игру'")
 
+# Кнопка "Записаться на игру" и команда /join
+@dp.message(lambda message: message.text == "🎮 Записаться на игру")
+async def join_tournament(message: types.Message):
     if len(players) < 12:
-        if user_id not in players:
-            players[user_id] = user_name
-            await bot.send_message(callback_query.from_user.id, f"✅ Вы записаны ({len(players)}/12)")
-            
+        if message.from_user.full_name not in players:
+            players.append(message.from_user.full_name)
+            await message.answer(f"✅ {message.from_user.full_name} записан! ({len(players)}/12)")
             if len(players) == 12:
-                await bot.send_message(callback_query.from_user.id, "🔥 Лобби заполнено! Запись закрыта!")
+                await message.answer("🔥 Лобби заполнено! Запись закрыта!")
         else:
-            await bot.send_message(callback_query.from_user.id, "⚠️ Вы уже записаны!")
+            await message.answer("⚠️ Вы уже записаны!")
     else:
-        await bot.send_message(callback_query.from_user.id, "❌ Лобби заполнено!")
+        await message.answer("❌ Лобби заполнено!")
 
-# Выход из списка
-@dp.callback_query(lambda c: c.data == "leave")
-async def leave_tournament(callback_query: types.CallbackQuery):
-    user_id = callback_query.from_user.id
-
-    if user_id in players:
-        del players[user_id]
-        await bot.send_message(callback_query.from_user.id, "Вы вышли из списка.")
-    else:
-        await bot.send_message(callback_query.from_user.id, "❌ Вас нет в списке.")
-
-# Вывести список игроков
-@dp.callback_query(lambda c: c.data == "players")
-async def show_players(callback_query: types.CallbackQuery):
+# Кнопка "Список участников"
+@dp.message(lambda message: message.text == "📋 Список участников")
+async def list_players(message: types.Message):
     if players:
-        players_list = "\n".join(players.values())
-        await bot.send_message(callback_query.from_user.id, f"📜 Список игроков:\n{players_list}")
+        await message.answer("📜 Список игроков:\n" + "\n".join(players))
     else:
-        await bot.send_message(callback_query.from_user.id, "❌ Пока никто не записался.")
+        await message.answer("❌ Пока никто не записался.")
 
-# Таймер обратного отсчета
-async def countdown_timer():
-    while True:
-        now = datetime.now()
-        game_time = datetime(now.year, now.month, now.day, 21, 0)  # 21:00 МСК
-        if now > game_time:
-            game_time += timedelta(days=1)
+# Кнопка "🚪 Выйти из списка"
+@dp.message(lambda message: message.text == "🚪 Выйти из списка")
+async def leave_tournament(message: types.Message):
+    if message.from_user.full_name in players:
+        players.remove(message.from_user.full_name)
+        await message.answer("Зассал? 😏 Ждем тебя в другой раз!")
+    else:
+        await message.answer("❌ Вас нет в списке.")
 
-        time_left = (game_time - now).total_seconds()
+# Кнопка "Разделение команд" (заглушка, пока без логики)
+@dp.message(lambda message: message.text == "⚔ Разделение команд")
+async def teams_division(message: types.Message):
+    await message.answer("⚔ Функция разделения команд в разработке!")
 
-        if time_left > 0:
-            await asyncio.sleep(time_left - 1800)  # 30 минут
-            await notify_players("⏳ Осталось 30 минут до начала игры!")
-            await asyncio.sleep(600)  # 20 минут
-            await notify_players("⏳ Осталось 20 минут до начала игры!")
-            await asyncio.sleep(600)  # 10 минут
-            await notify_players("⏳ Осталось 10 минут до начала игры!")
-
-# Рассылка уведомлений игрокам
-async def notify_players(message: str):
-    for user_id in players.keys():
-        try:
-            await bot.send_message(user_id, message)
-        except Exception as e:
-            print(f"Ошибка отправки {user_id}: {e}")
+# Админ-команда /reset (сброс списка игроков)
+@dp.message(Command("reset"))
+async def reset_players(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        global players
+        players = []
+        await message.answer("🔄 Список участников очищен!")
+    else:
+        await message.answer("⛔ У вас нет прав использовать эту команду.")
 
 async def main():
-    asyncio.create_task(countdown_timer())  # Запуск таймера
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
